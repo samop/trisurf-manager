@@ -519,4 +519,5 @@ class Runner:
 			str=" running."
 		return(self.Dir.fullpath()+str)
 
-
+	def __repr__(self):
+		return("Instance of trisurf in "+self.Dir.fullpath())
