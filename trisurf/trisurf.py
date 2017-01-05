@@ -186,7 +186,6 @@ class Statistics:
 		self.path=path
 		self.filename=filename
 		self.fullname=os.path.join(path,filename)
-		self.fileOK=self.read()
 		return
 
 	def exists(self):
@@ -196,7 +195,7 @@ class Statistics:
 		else:
 			return False
 
-	def mapcount(self):
+	def lineCount(self):
 		'''
 		Internal method for determining the number of the lines in the most efficient way. Is it really the most efficient?
 		'''
@@ -213,19 +212,26 @@ class Statistics:
 			f.close()
 		return lines
 
-	def tail(self,filename,n=2):
-		with open(filename,'r') as myfile:
+	def tail(self):
+		with open(self.fullname,'r') as myfile:
 			lines=myfile.readlines()
 		return [lines[len(lines)-2].replace('\n',''),lines[len(lines)-1].replace('\n','')]
 
-	def read(self):
+	def checkFileValidity(self):
 		try:
-			lines=self.tail(self.fullname)
+			lines=self.tail()
 		except:
 			return(False)
 		if len(lines)<2:
 			return(False)
-		#print (line)
+		return(True)
+
+	def getSimulationDeltaTime(self):
+		try:
+			lines=self.tail()
+		except:
+			return 0
+		
 		fields=shlex.split(lines[0])
 		epoch1=fields[0]
 		n1=fields[1]
@@ -234,61 +240,30 @@ class Statistics:
 		epoch2=fields[0]
 		n2=fields[1]
 		try:
-			self.dT=int(epoch2)-int(epoch1)
-			self.last=n2
-			#print(epoch1)
-			#print(epoch2)
-			#print(self.dT)
-			#print(self.last)
-			self.startDate=os.path.getmtime(os.path.join(self.path,'.lock'))
+			dT=int(epoch2)-int(epoch1)
 		except:
-			return(False)
-		return(True)
+			return 0
+		return dT
+
+	def getLastIterationInStatistics(self):
+		try:
+			lines=self.tail()
+		except:
+			return 0
+		
+		fields=shlex.split(lines[0])
+		epoch1=fields[0]
+		n1=fields[1]
+		
+		fields=shlex.split(lines[1])
+		epoch2=fields[0]
+		return (fields[1])
+		
 
 	def readText(self):
 		with open(self.fullname, 'r+') as fin:
 			cont=fin.read()
 		return cont
-
-	def read_old(self):
-		'''
-		Method read() reads the statistics if it exists. It sets local variable dT storing the time differential between two intervals of simulation (outer loops). It also stores last simulation loop and the start of the run.
-		'''
-		if(self.exists()):
-		#	epoch1=0
-		#	epoch2=0
-		#	n1=0
-		#	n2=0
-			nlines=self.mapcount()
-			if nlines<2:
-				return(False)
-			try:
-				with open(self.fullname, "r+") as fin:
-					i=0;
-					for line in fin:
-						if(i==1):
-							#print (line)
-							fields=shlex.split(line)
-							epoch1=fields[0]
-							n1=fields[1]
-						if(i==nlines-1):
-							fields=shlex.split(line)
-							epoch2=fields[0]
-							n2=fields[1]
-						i=i+1
-			except:
-				#print("Cannot read statistics file in "+self.fullname+"\n")
-				return(False)
-		else:
-			#print("File "+self.fullname+" does not exists.\n")
-			return(False)
-		try:
-			self.dT=(int(epoch2)-int(epoch1))/(int(n2)-int(n1))
-		except:
-			self.dT=0
-		self.last=n2
-		self.startDate=epoch1
-		return(True)
 
 	def __str__(self):
 		'''
@@ -365,6 +340,13 @@ class Runner:
 			return True
 		else:
 			return False
+
+
+	def getStartTime(self):
+		try:
+			return os.path.getmtime(os.path.join(self.Dir.fullpath(),'.lock'))
+		except:
+			return -1
 
 	def getStatus(self):
 		pid=self.getPID()
@@ -469,8 +451,8 @@ class Runner:
 		self.Comment=FileContent(os.path.join(self.Dir.fullpath(),".comment"))
 		pid=self.getPID()
 		status=self.getStatus()
-		if(self.Statistics.fileOK):
-			ETA=str(datetime.timedelta(microseconds=(int(self.Tape.config['iterations'])-int(self.Statistics.last))*self.Statistics.dT)*1000000)
+		if(self.Statistics.checkFileValidity()):
+			ETA=str(datetime.timedelta(microseconds=(int(self.Tape.config['iterations'])-int(self.Statistics.getLastIterationInStatistics()))*self.Statistics.getSimulationDeltaTime())*1000000)
 		if(status==TS_NONEXISTANT or status==TS_NOLOCK):
 			statustxt="Not running"
 			pid=""
@@ -485,8 +467,8 @@ class Runner:
 		else:
 			statustxt="Running"
 
-		if(self.Statistics.fileOK):
-			report=[time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(self.Statistics.startDate))),ETA, statustxt, pid, str(self.Dir.fullpath()), self.Comment.getText()]
+		if(self.Statistics.checkFileValidity()):
+			report=[time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(self.getStartTime()))),ETA, statustxt, pid, str(self.Dir.fullpath()), self.Comment.getText()]
 		else:
 			report=["N/A","N/A",statustxt, pid, str(self.Dir.fullpath()), self.Comment.getText()]
 		return report
