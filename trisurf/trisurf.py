@@ -258,6 +258,35 @@ class Statistics:
 		fields=shlex.split(lines[1])
 		epoch2=fields[0]
 		return (fields[1])
+
+	def getColumn(self,n=0):
+		lines=self.readText().splitlines()
+		col=[]
+		name=lines[0].split()[n]
+		for line in lines:
+			col.append(line.split()[n])
+		return col[2:],name
+
+	def getTable(self):
+		lines=self.readText().splitlines()
+		keys=lines[0].split()
+		table={}
+		def num(s):
+			try:
+				return int(s)
+			except ValueError:
+				return float(s)
+		for key in keys:
+			table[key]=[]
+		for line in lines:
+			fields=line.split()
+			for i in range(0,len(keys)-1):
+				try:
+					value=num(fields[i])
+					table[keys[i]].append(value)
+				except:
+					pass
+		return table	
 		
 
 	def readText(self):
