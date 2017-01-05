@@ -103,10 +103,9 @@ class Renderer:
 		interactor = vtkRenderWindowInteractor()
 		interactor.SetRenderWindow(self.renderer_window)
 		interactor.Initialize()
- 		interactor.AddObserver("TimerEvent", self.RenderUpdate)
+		interactor.AddObserver("TimerEvent", self.RenderUpdate)
 		timerIDR = interactor.CreateRepeatingTimer(1000)
 		interactor.Start()
-
 		return
 
 	def lastVTU(self):

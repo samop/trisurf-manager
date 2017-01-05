@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from distutils.core import setup
 
 setup(name="trisurf", version="0.1a",
