@@ -40,7 +40,7 @@ def ParseCLIArguments(arguments):
 			    help='process number at host. If hostname is not specified, localhost is assumed. If no processes are specified all processes on all hosts are assumed.')
 	action_group=parser.add_mutually_exclusive_group(required=True)
 	action_group.add_argument('-c','--comment',nargs=1, help='append comment to current comment')
-	action_group.add_argument('--analysis', nargs='*', help='runs analysis function defined in configuration file')
+	action_group.add_argument('--analysis', nargs='+', help='runs analysis function defined in configuration file')
 	action_group.add_argument('--delete-comment', help='delete comment',action='store_true')
 	action_group.add_argument('-k','--kill','--stop','--suspend', help='stop/kill the process', action='store_true')
 	action_group.add_argument('-r','--run','--start','--continue', help='start/continue process', action='store_true')
@@ -188,6 +188,9 @@ def start_web_server(args,host):
 
 
 def analyze(args,host,a_dict, analysis):
+	if len(a_dict)==0:
+		print ('Error: no analyses are specified in the tsmgr.start()!')
+		exit(1)
 	target_runs=getTargetRunIdxList(args)
 	if target_runs==None:
 		target_runs=list(range(1,len(host['runs'])+1))
@@ -250,14 +253,12 @@ def getListOfHostConfigurationByHostname(hosts,host):
 def start(hosts,argv=sys.argv[1:], analyses={}):
 	args=vars(ParseCLIArguments(argv))
 	#print(vars(args))
-
 	#Backward compatibility... If running just on localmode, the host specification is unnecessary. Check if only Runs are specified
 	try:
 		test_host=hosts[0]['name']
 	except:
 		print("Old syntax detected.")
 		hosts=({'name':socket.gethostname(),'address':'127.0.0.1', 'runs':hosts},)
-
 
 	#find the host at which the action is attended
 	if args['host']==None:
