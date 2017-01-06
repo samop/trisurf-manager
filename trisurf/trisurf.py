@@ -280,7 +280,7 @@ class Statistics:
 			table[key]=[]
 		for line in lines:
 			fields=line.split()
-			for i in range(0,len(keys)-1):
+			for i in range(0,len(keys)):
 				try:
 					value=num(fields[i])
 					table[keys[i]].append(value)

@@ -1,7 +1,6 @@
 import paramiko
 
 
-
 class Connection:
 	def __init__(self, hostname, port=22, username=None, password=None):
 		self.hostname=hostname

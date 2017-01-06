@@ -19,10 +19,18 @@ run3.setMaindir(("N","k","V","Np","Nm"),("nshell","xk0","constvolswitch","npoly"
 run3.setSubdir("run2")
 
 
-
 Runs=[run2, run3]
 
-hosts=({'name':'Hestia','address':'kabinet.penic.eu', 'runs':Runs, 'username':'samo'},
-	{'name':'altea','address':'127.0.0.1', 'runs':Runs, 'username':'samo'})
+#this is how analyses are defined
+def analyze(run, **kwargs):
+	host=kwargs.get('host', None)
+	print("Analysis on host "+host['name']+" for run "+run.Dir.fullpath()+" completed")
 
-tsmgr.start(hosts)
+
+
+
+hosts=({'name':'natalie','address':'kabinet.penic.eu', 'runs':Runs, 'username':'samo'},
+	{'name':'Hestia','address':'127.0.0.1', 'runs':Runs, 'username':'samo'})
+
+analyses={'analysis1':analyze,}
+tsmgr.start(hosts, analyses=analyses)

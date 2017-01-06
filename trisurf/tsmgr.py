@@ -20,6 +20,8 @@ else:
 
 from IPython import embed
 
+import __main__ as main
+
 #Color definitions for terminal
 class bcolors:
     HEADER = '\033[95m'
@@ -38,6 +40,7 @@ def ParseCLIArguments(arguments):
 			    help='process number at host. If hostname is not specified, localhost is assumed. If no processes are specified all processes on all hosts are assumed.')
 	action_group=parser.add_mutually_exclusive_group(required=True)
 	action_group.add_argument('-c','--comment',nargs=1, help='append comment to current comment')
+	action_group.add_argument('--analysis', nargs='*', help='runs analysis function defined in configuration file')
 	action_group.add_argument('--delete-comment', help='delete comment',action='store_true')
 	action_group.add_argument('-k','--kill','--stop','--suspend', help='stop/kill the process', action='store_true')
 	action_group.add_argument('-r','--run','--start','--continue', help='start/continue process', action='store_true')
@@ -83,7 +86,8 @@ def copyConfigAndConnect(hosts):
 				port=22 #default ssh port
 			rm=Remote.Connection(hostname=host['address'],username=username, port=port)
 			rm.connect()
-			rm.send_file(__file__,'remote_control.py')
+#			print ("Sendind file:"+main.__file__)
+			rm.send_file(main.__file__,'remote_control.py')
 			for run in host['runs']:
 				try:
 					rm.send_file(run.tapeFile,run.tapeFile)
@@ -116,7 +120,7 @@ def status_processes(args,host):
 	if target_runs==None:
 		target_runs=list(range(1,len(host['runs'])+1))
 	report=[]
-	print("was here")
+#	print("was here")
 	for i in target_runs:
 		line=host['runs'][i-1].getStatistics()
 		line.insert(0,i)
@@ -182,7 +186,22 @@ def start_web_server(args,host):
 		print("Cannot start WebServer in python 2.7")
 	exit(0)
 
-def perform_action(args,host):
+
+def analyze(args,host,a_dict, analysis):
+	target_runs=getTargetRunIdxList(args)
+	if target_runs==None:
+		target_runs=list(range(1,len(host['runs'])+1))
+	for i in target_runs:
+
+		for anal in analysis:
+			if(anal not in a_dict):
+				print("Analysis '"+anal+"' is not known. Available analyses: "+", ".join(a_dict.keys())+".")
+				exit(0)
+		for anal in analysis:
+			a_dict[anal](host['runs'][i-1],host=host)
+
+
+def perform_action(args,host,**kwargs):
 	#find which flags have been used and act upon them. -r -s -k -v -c --delete-comment are mutually exclusive, so only one of them is active
 	if args['run']:
 		run_processes(args,host)
@@ -201,6 +220,9 @@ def perform_action(args,host):
 	elif args['jump_to_ipython']:
 		print('Jumping to shell...')
 		embed()
+		exit(0)
+	elif args['analysis']!= None:
+		analyze(args,host,kwargs.get('analyses', {}), args['analysis'])
 		exit(0)
 	else: #version requested
 		print(getTrisurfVersion())
@@ -225,7 +247,7 @@ def getListOfHostConfigurationByHostname(hosts,host):
 
 
 
-def start(hosts,argv=sys.argv[1:]):
+def start(hosts,argv=sys.argv[1:], analyses={}):
 	args=vars(ParseCLIArguments(argv))
 	#print(vars(args))
 
@@ -233,10 +255,8 @@ def start(hosts,argv=sys.argv[1:]):
 	try:
 		test_host=hosts[0]['name']
 	except:
-		print("Network mode disabled. Old syntax detected.")
-		host={'name':socket.gethostname(),'address':'127.0.0.1', 'runs':hosts}
-		perform_action(args,host)
-		exit(0)
+		print("Old syntax detected.")
+		hosts=({'name':socket.gethostname(),'address':'127.0.0.1', 'runs':hosts},)
 
 
 	#find the host at which the action is attended
@@ -259,7 +279,7 @@ def start(hosts,argv=sys.argv[1:]):
 				print("Host <font color='orange'>"+host['name']+"</font> reports the following:")
 			else:
 				print("Host "+bcolors.WARNING+host['name']+bcolors.ENDC+" reports the following:")
-			perform_action(args,host)
+			perform_action(args,host, analyses=analyses)
 		elif not args['local_only']:
 			output=host['_conn'].execute('python3 ./remote_control.py -x '+" ".join(argv))
 			for line in output:
