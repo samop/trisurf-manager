@@ -11,7 +11,7 @@ import socketserver
 class TsWEB(http.server.BaseHTTPRequestHandler):
 	def do_GET(self):
 		parsed_path=urlparse(self.path)
-		"""	message_parts = [
+		message_parts = [
                 'CLIENT VALUES:',
                 'client_address=%s (%s)' % (self.client_address, self.address_string()),
                 'command=%s' % self.command,
@@ -30,14 +30,18 @@ class TsWEB(http.server.BaseHTTPRequestHandler):
 		for name, value in sorted(self.headers.items()):
 			message_parts.append('%s=%s' % (name, value.rstrip()))
 		message_parts.append('')
-		message = '<br>'.join(message_parts) """
+		message = '<br>'.join(message_parts)
 		self.send_response(200)
 		self.end_headers()
 		self.wfile.write(b"<h1>Trisurf-ng manager web interface</h1><hr>")
 		oldstdout=sys.stdout
-		process=subprocess.Popen (['/usr/bin/python3', sys.argv[0], '-s', '--html'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		if(parsed_path.path=='/analysis'):
+			process=subprocess.Popen (['/usr/bin/python3', sys.argv[0], '--analysis', parsed_path.query, '--html'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		else:
+			process=subprocess.Popen (['/usr/bin/python3', sys.argv[0], '-s', '--html'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		stdout, stderr= process.communicate()
 		output=stdout.decode('ascii')
+		output=output+message
 		output=output.replace('\n','<BR>')
 		output=bytearray(output,'ascii')
 		self.wfile.write(output)

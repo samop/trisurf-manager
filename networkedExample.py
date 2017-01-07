@@ -35,10 +35,13 @@ def analyze(run, **kwargs):
 	print("here comes info on the args variable:")
 	print(kwargs.get('args',None))
 
-
+def testWebAnalysis(run, **kwargs):
+	print("Simulations are located in "+run.Dir.fullpath())
+	print("\n\nStatistics file:")
+	print(run.Statistics.readText())
 
 hosts=({'name':'natalie','address':'kabinet.penic.eu', 'runs':Runs, 'username':'samo', 'remotebasepath':'simulations-test/subdir/subdir'},
 	{'name':'Hestia','address':'127.0.0.1', 'runs':Runs, 'username':'samo'})
-analyses={'analysis1':analyze,}
+analyses={'analysis1':analyze,'webReport':testWebAnalysis}
 
 tsmgr.start(hosts, analyses=analyses)
