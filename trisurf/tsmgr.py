@@ -74,6 +74,15 @@ def getTrisurfVersion():
 
 def copyConfigAndConnect(hosts):
 	print("Connecting to remote hosts and copying config files, tapes and snapshots")
+	#create a list of files to be copied across all the remote hosts
+	file_list=[]
+	for h in hosts:
+		for r in h['runs']:
+			if(r.isFromSnapshot):
+				file_list.append(r.snapshotFilename)
+			else:
+				file_list.append(r.tapeFilename)
+	file_list.append(main.__file__)
 	for host in hosts:
 		if(host['name'] !=socket.gethostname()): #if I am not the computer named in host name
 			try:
@@ -87,16 +96,21 @@ def copyConfigAndConnect(hosts):
 			rm=Remote.Connection(hostname=host['address'],username=username, port=port)
 			rm.connect()
 #			print ("Sendind file:"+main.__file__)
-			rm.send_file(main.__file__,'remote_control.py')
-			for run in host['runs']:
-				try:
-					rm.send_file(run.tapeFile,run.tapeFile)
-				except:
-					pass
-				try:
-					rm.send_file(run.snapshotFile,run.snapshotFile)
-				except:
-					pass
+			if('remotebasepath' in host):
+				remote_dir=host['remotebasepath']
+			else:
+				remote_dir='trisurf_simulations'
+			rm.send_multiple_files_in_directory(file_list,remote_dir)
+#			rm.send_file(main.__file__,'remote_control.py')
+#			for run in host['runs']:
+#				try:
+#					rm.send_file(run.tapeFile,run.tapeFile)
+#				except:
+#					pass
+#				try:
+#					rm.send_file(run.snapshotFile,run.snapshotFile)
+#				except:
+#					pass
 			host['_conn']= rm
 	# we are connected to all hosts...
 	return hosts
@@ -287,7 +301,11 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 				print("Host "+bcolors.WARNING+host['name']+bcolors.ENDC+" reports:")
 			perform_action(args,host, analyses=analyses, hosts=hosts)
 		elif not args['local_only']:
-			output=host['_conn'].execute('python3 ./remote_control.py -x '+" ".join(argv))
+			if('remotebasepath' in host):
+				remote_dir=host['remotebasepath']
+			else:
+				remote_dir='trisurf_simulations'
+			output=host['_conn'].execute('python3 ./'+remote_dir+'/'+main.__file__+' -x '+" ".join(argv))
 			for line in output:
 				print(line.replace('\n',''))
 

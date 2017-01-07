@@ -37,8 +37,8 @@ def analyze(run, **kwargs):
 
 
 
-hosts=({'name':'natalie','address':'kabinet.penic.eu', 'runs':Runs, 'username':'samo'},
+hosts=({'name':'natalie','address':'kabinet.penic.eu', 'runs':Runs, 'username':'samo', 'remotebasepath':'simulations-test/subdir/subdir'},
 	{'name':'Hestia','address':'127.0.0.1', 'runs':Runs, 'username':'samo'})
-
 analyses={'analysis1':analyze,}
+
 tsmgr.start(hosts, analyses=analyses)

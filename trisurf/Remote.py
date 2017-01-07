@@ -1,5 +1,5 @@
 import paramiko
-
+import os.path
 
 class Connection:
 	def __init__(self, hostname, port=22, username=None, password=None):
@@ -69,4 +69,33 @@ class Connection:
 		sftp.mkdir(directory)
 		sftp.close()
 
+	def mkdir_p(self,sftp, remote_directory):
+		"""Change to this directory, recursively making new folders if needed.
+		Returns True if any folders were created. Recursive algorithm."""
+		if remote_directory == '/':
+			# absolute path so change directory to root
+			sftp.chdir('/')
+			return
+		if remote_directory == '':
+			# top-level relative directory must exist
+			return
+		try:
+			sftp.chdir(remote_directory) # sub-directory exists
+		except IOError:
+			dirname, basename = os.path.split(remote_directory.rstrip('/'))
+			self.mkdir_p(sftp, dirname) # make parent directories
+			sftp.mkdir(basename) # sub-directory missing, so created it
+			sftp.chdir(basename)
+		return True
 	
+	def send_multiple_files_in_directory(self,local_files,directory):
+		sftp=self.ssh.open_sftp()
+#		try:
+#			sftp.chdir(directory)  # Test if remote_path exists
+#		except (IOError,FileNotFoundError):
+#			sftp.mkdir(directory)  # Create remote_path
+#			sftp.chdir(directory)
+		self.mkdir_p(sftp, directory)
+		for f in set(local_files):	
+			sftp.put(f, f)
+		sftp.close()	
