@@ -1,0 +1,115 @@
+#!/usr/bin/python3
+from trisurf import tsmgr
+from trisurf import trisurf
+from trisurf import statistics
+
+print("Running trisurf version "+ tsmgr.getTrisurfVersion())
+Runs=[]
+Nshell=25
+
+#--------- F = 0 ------------
+#kapa_list=[10,20,30,40,50]
+#p=[5,10,15,20,25]
+
+#N=5*Nshell**2+2
+#Nc_list=[int(N*pp/100)  for pp in p]
+
+#for kapa in kapa_list:
+#	for Nc in Nc_list:
+#		run=trisurf.Runner(tape='tape_Nc'+str(Nc)+'_k'+str(kapa))
+#		run.setMaindir(("N", "k", "V", "_Nc", "_c","_w"),  ("nshell","xk0","constvolswitch","number_of_vertices_with_c0","c0", "w"))
+#		run.setSubdir("run0")
+#		Runs.append(run)
+
+#----------------------------
+#--------- F = 0 ------------
+kapa_list=[15,16,17,18,19,20,21,22]
+#p=[5,7.5,10,12.5]
+p=[8,8.5,9,9.5,10.5,11,11.5,12]
+
+N=5*Nshell**2+2
+Nc_list=[int(N*pp/100)  for pp in p]
+#print(Nc_list)
+
+#spremenil sem, ker nimam vseh podatkov!!!
+kapa_list=[15,16,18,19,20,21,21,22]
+Nc_list=[156,234,312,390]
+
+for kapa in kapa_list:
+	for Nc in Nc_list:
+		#print('tape_Nc'+str(Nc)+'_k'+str(kapa))
+		run=trisurf.Runner(tape='tape_Nc'+str(Nc)+'_k'+str(kapa))
+		run.setMaindir(("N", "k", "V", "_Nc", "_c","_w"),  ("nshell","xk0","constvolswitch","number_of_vertices_with_c0","c0", "w"))
+		run.setSubdir("run0")
+		Runs.append(run)
+
+#----------------------------
+
+#kapa_list=[20,30]
+#p=[10]
+#
+#N=5*Nshell**2+2
+#Nc_list=[int(N*pp/100)  for pp in p]
+#
+#for kapa in kapa_list:
+#	for Nc in Nc_list:
+#		run=trisurf.Runner(snapshot='is_from_N25k'+str(kapa)+'V0_Nc312_c1.0.vtu')
+#		run.setMaindir(("N", "k", "V", "_Nc", "_c","_w","_F"),  ("nshell","xk0","constvolswitch","number_of_vertices_with_c0","c0", "w","F"))
+#		run.setSubdir("run0")
+#
+#		Runs.append(run)
+
+#----------------------------
+
+
+
+#Nov format:
+#hosts=({'name':'Hestia','address':'127.0.0.1', 'runs':Runs,  'username':'samo'},)
+
+def analyze(run, **kwargs):
+	host=kwargs.get('host', None)
+	print("Demo analysis")
+	print("Analysis on host "+host['name']+" for run "+run.Dir.fullpath()+" completed")
+
+def plothbar(run, **kwargs):
+	import matplotlib.pyplot as plt
+
+	def smooth(y, box_pts):
+		import numpy as np
+		box = np.ones(box_pts)/box_pts
+		y_smooth = np.convolve(y, box, mode='same')
+		return y_smooth
+	table=trisurf.Statistics(run.Dir.fullpath(),filename='data_tspoststat.csv').getTable()
+	plt.plot(table['hbar'], '.')
+	plt.title(run.Dir.fullpath())
+	plt.xlabel('Iteration')
+	plt.ylabel('hbar')
+	smooth_window=10
+	smoothed=smooth(table['hbar'],smooth_window)
+	plt.plot(tuple(range(int(smooth_window/2),len(smoothed)-int(smooth_window/2))),smoothed[int(smooth_window/2):-int(smooth_window/2)])
+	plt.show()
+	print
+	#if return False or no return statement, the analysis will continue with next running instance in the list. if return True, the analysis will stop after this run.
+	return False
+
+def plotrunningavg(run, **kwargs):
+	import matplotlib.pyplot as plt
+	table=trisurf.Statistics(run.Dir.fullpath(),filename='data_tspoststat.csv').getTable()
+	def running_avg(col):
+		import numpy as np
+		avg=[]	
+		for i in range(0,len(col)):
+			avg.append(np.average(col[:-i]))
+		return avg
+	ra=running_avg(table['hbar'])
+	plt.plot(ra)
+	plt.title('Running average')
+	plt.ylabel('1/n sum_i=niter^n(hbar_i)')
+	plt.xlabel('n')
+	plt.show()
+
+#start manager with configured runs
+tsmgr.start(Runs, analyses={'analyze1':analyze, 'plotrunningavg':plotrunningavg, 'plothbar':plothbar})
+
+#statistics.combine(Runs)
+#statistics.combine([Runs[1],Runs[2]])

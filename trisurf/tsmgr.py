@@ -201,7 +201,12 @@ def analyze(args,host,a_dict, analysis):
 				print("Analysis '"+anal+"' is not known. Available analyses: "+", ".join(a_dict.keys())+".")
 				exit(0)
 		for anal in analysis:
-			a_dict[anal](host['runs'][i-1],host=host)
+			retval=a_dict[anal](host['runs'][i-1],host=host)
+			#try:
+			if(retval):
+				exit(0)
+			#except:
+			#	pass
 
 
 def perform_action(args,host,**kwargs):
@@ -277,9 +282,9 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 	for host in hosts:
 		if host['name'] == socket.gethostname():
 			if(args['html']):
-				print("Host <font color='orange'>"+host['name']+"</font> reports the following:")
+				print("Host <font color='orange'>"+host['name']+"</font> reports:")
 			else:
-				print("Host "+bcolors.WARNING+host['name']+bcolors.ENDC+" reports the following:")
+				print("Host "+bcolors.WARNING+host['name']+bcolors.ENDC+" reports:")
 			perform_action(args,host, analyses=analyses)
 		elif not args['local_only']:
 			output=host['_conn'].execute('python3 ./remote_control.py -x '+" ".join(argv))
