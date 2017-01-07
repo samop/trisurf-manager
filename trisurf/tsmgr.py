@@ -305,7 +305,11 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 				remote_dir=host['remotebasepath']
 			else:
 				remote_dir='trisurf_simulations'
-			output=host['_conn'].execute('python3 ./'+remote_dir+'/'+main.__file__+' -x '+" ".join(argv))
+			#output=host['_conn'].execute('cd '+remote_dir)
+			#print(remote_dir)
+			#print(main.__file__)
+			#print('python3 '+main.__file__+' -x '+" ".join(argv))
+			output=host['_conn'].execute('cd '+remote_dir+ '; python3 '+main.__file__+' -x '+" ".join(argv))
 			for line in output:
 				print(line.replace('\n',''))
 
