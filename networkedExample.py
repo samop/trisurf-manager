@@ -24,8 +24,16 @@ Runs=[run2, run3]
 #this is how analyses are defined
 def analyze(run, **kwargs):
 	host=kwargs.get('host', None)
+	print("Demo analysis")
 	print("Analysis on host "+host['name']+" for run "+run.Dir.fullpath()+" completed")
-
+	print("here comes info on the run variable:")
+	print(run)
+	print("here comes info on the host variable:")
+	print(host)
+	print("here comes info on the hosts variable:")
+	print(kwargs.get('hosts',None))
+	print("here comes info on the args variable:")
+	print(kwargs.get('args',None))
 
 
 

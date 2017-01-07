@@ -50,7 +50,7 @@ def ParseCLIArguments(arguments):
 	action_group.add_argument('--jump-to-ipython', help='loads the variables and jumps to IPython shell', action="store_true")
 	action_group.add_argument('-p','--preview',help='preview last VTU shape',action='store_true')
 	parser.add_argument('--force', help='if dangerous operation (killing all the processes) is requested, this flag is required to execute the operation. Otherwise, the request will be ignored.', action="store_true")
-	parser.add_argument('-H', '--host', nargs=1, help='specifies which host is itended for the operation. Defauts to localhost for all operations except --status and --version, where all configured hosts are assumed.')
+	parser.add_argument('-H', '--host', nargs='+', help='specifies which host is itended for the operation. Defauts to localhost for all operations except --status and --version, where all configured hosts are assumed.')
 	parser.add_argument('--html', help='Generate HTML output', action="store_true")
 	parser.add_argument('-n', nargs='+', metavar='PROC_NO', type=int, help='OBSOLETE. Specifies process numbers.')
 	parser.add_argument('-R','--raw',help='print status and the rest of the information in raw format', action="store_true")
@@ -187,7 +187,7 @@ def start_web_server(args,host):
 	exit(0)
 
 
-def analyze(args,host,a_dict, analysis):
+def analyze(args,host,a_dict, analysis,hosts):
 	if len(a_dict)==0:
 		print ('Error: no analyses are specified in the tsmgr.start()!')
 		exit(1)
@@ -201,13 +201,15 @@ def analyze(args,host,a_dict, analysis):
 				print("Analysis '"+anal+"' is not known. Available analyses: "+", ".join(a_dict.keys())+".")
 				exit(0)
 		for anal in analysis:
-			retval=a_dict[anal](host['runs'][i-1],host=host)
+			retval=a_dict[anal](host['runs'][i-1],host=host, args=args, hosts=hosts)
 			#try:
 			if(retval):
 				exit(0)
 			#except:
 			#	pass
 
+
+	
 
 def perform_action(args,host,**kwargs):
 	#find which flags have been used and act upon them. -r -s -k -v -c --delete-comment are mutually exclusive, so only one of them is active
@@ -230,7 +232,7 @@ def perform_action(args,host,**kwargs):
 		embed()
 		exit(0)
 	elif args['analysis']!= None:
-		analyze(args,host,kwargs.get('analyses', {}), args['analysis'])
+		analyze(args,host,kwargs.get('analyses', {}), args['analysis'],kwargs.get('hosts',None))
 		exit(0)
 	else: #version requested
 		print(getTrisurfVersion())
@@ -257,7 +259,6 @@ def getListOfHostConfigurationByHostname(hosts,host):
 
 def start(hosts,argv=sys.argv[1:], analyses={}):
 	args=vars(ParseCLIArguments(argv))
-	#print(vars(args))
 	#Backward compatibility... If running just on localmode, the host specification is unnecessary. Check if only Runs are specified
 	try:
 		test_host=hosts[0]['name']
@@ -267,6 +268,7 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 
 	#find the host at which the action is attended
 	if args['host']==None:
+		#Only status and version commands are automatically executed on all the hosts. stopping or starting  or other actions is not!
 		if(args['status']==False and args['version']==False):
 			hosts=getListOfHostConfigurationByHostname(hosts,socket.gethostname())
 	else:
@@ -274,10 +276,8 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 	if len(hosts)==0:
 		print ('Hostname "{}" does not exist in configuration file. Please check the spelling'.format(args['host'][0]))
 		exit(1)
-
 	if not args['local_only']:
 			hosts=copyConfigAndConnect(hosts)
-
 	#do local stuff:
 	for host in hosts:
 		if host['name'] == socket.gethostname():
@@ -285,7 +285,7 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 				print("Host <font color='orange'>"+host['name']+"</font> reports:")
 			else:
 				print("Host "+bcolors.WARNING+host['name']+bcolors.ENDC+" reports:")
-			perform_action(args,host, analyses=analyses)
+			perform_action(args,host, analyses=analyses, hosts=hosts)
 		elif not args['local_only']:
 			output=host['_conn'].execute('python3 ./remote_control.py -x '+" ".join(argv))
 			for line in output:
