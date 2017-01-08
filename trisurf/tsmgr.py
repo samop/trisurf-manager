@@ -55,6 +55,7 @@ def ParseCLIArguments(arguments):
 	parser.add_argument('-n', nargs='+', metavar='PROC_NO', type=int, help='OBSOLETE. Specifies process numbers.')
 	parser.add_argument('-R','--raw',help='print status and the rest of the information in raw format', action="store_true")
 	parser.add_argument('-x','--local-only',help='do not attempt to contact remote hosts. Run all operations only on local machine',action='store_true')
+	parser.add_argument('--originating-host',nargs=1,help='specify which host started the remote connections. Useful mainly fo internal functionaly of tsmgr and analyses.')
 	args = parser.parse_args(arguments)
 	return args
 
@@ -309,7 +310,7 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 			#print(remote_dir)
 			#print(main.__file__)
 			#print('python3 '+main.__file__+' -x '+" ".join(argv))
-			output=host['_conn'].execute('cd '+remote_dir+ '; python3 '+main.__file__+' -x '+" ".join(argv))
+			output=host['_conn'].execute('cd '+remote_dir+ '; python3 '+main.__file__+' -x --originating-host ' +socket.gethostname()+" ".join(argv))
 			for line in output:
 				print(line.replace('\n',''))
 
