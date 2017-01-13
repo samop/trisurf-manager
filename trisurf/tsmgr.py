@@ -16,7 +16,6 @@ else:
 	from urlparse import urlparse
 	from vtk import *
 	
-from . import VTKRendering
 #import io
 
 from IPython import embed
@@ -261,6 +260,7 @@ def preview_vtu(args,host):
 	#if sys.version_info>=(3,0):
 	#	print("Preview works only with python 2.7")
 	#	exit(1)
+	from . import VTKRendering
 	if host['name'] == socket.gethostname():
 		VTKRendering.Renderer(args,host)
 
