@@ -15,7 +15,8 @@ if sys.version_info>=(3,0):
 else:
 	from urlparse import urlparse
 	from vtk import *
-	from . import VTKRendering
+	
+from . import VTKRendering
 #import io
 
 from IPython import embed
@@ -257,9 +258,9 @@ def perform_action(args,host,**kwargs):
 
 def preview_vtu(args,host):
 	#only for localhost at the moment
-	if sys.version_info>=(3,0):
-		print("Preview works only with python 2.7")
-		exit(1)
+	#if sys.version_info>=(3,0):
+	#	print("Preview works only with python 2.7")
+	#	exit(1)
 	if host['name'] == socket.gethostname():
 		VTKRendering.Renderer(args,host)
 

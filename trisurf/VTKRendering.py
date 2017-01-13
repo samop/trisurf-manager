@@ -1,9 +1,10 @@
 import os,sys
 from . import trisurf
-if sys.version_info<(3,0):
+try:
 	from vtk import *
-
-
+except:
+	print("Vtk rendering works if you manually install vtk7 for python3")
+	exit(1)
 
 class MultiRender:
 	def __init__(self,args,host):
@@ -51,7 +52,7 @@ class MultiRender:
 		output = reader.GetOutput()
 		scalar_range = output.GetScalarRange()
 		mapper = vtkDataSetMapper()
-		mapper.SetInput(output)
+		mapper.SetInputData(output)
 		mapper.SetScalarRange(scalar_range)
 
 		# Create the Actor
@@ -130,7 +131,7 @@ class Renderer:
 		output = reader.GetOutput()
 		scalar_range = output.GetScalarRange()
 		mapper = vtkDataSetMapper()
-		mapper.SetInput(output)
+		mapper.SetInputData(output)
 		mapper.SetScalarRange(scalar_range)
 
 		# Create the Actor
