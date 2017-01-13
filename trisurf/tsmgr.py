@@ -80,7 +80,7 @@ def copyConfigAndConnect(hosts):
 	for h in hosts:
 		for r in h['runs']:
 			if(r.isFromSnapshot):
-				file_list.append(r.snapshotFilename)
+				file_list.append(r.snapshotFile)
 			else:
 				file_list.append(r.tapeFilename)
 	file_list.append(main.__file__)
@@ -310,7 +310,7 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 			#print(remote_dir)
 			#print(main.__file__)
 			#print('python3 '+main.__file__+' -x '+" ".join(argv))
-			output=host['_conn'].execute('cd '+remote_dir+ '; python3 '+main.__file__+' -x --originating-host ' +socket.gethostname()+" ".join(argv))
+			output=host['_conn'].execute('cd '+remote_dir+ '; python3 '+main.__file__+' -x --originating-host ' +socket.gethostname()+" "+" ".join(argv))
 			for line in output:
 				print(line.replace('\n',''))
 
