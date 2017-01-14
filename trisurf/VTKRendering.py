@@ -80,10 +80,11 @@ class MultiRender:
 
 
 class Renderer:
-	def __init__(self,args,host,run):
+	def __init__(self,args,host,run, timestep=-1):
 		self.host=host
 		self.args=args
 		self.run=run
+		self.timestep=timestep
 		self.renderer = vtkRenderer()
 		self.actor=self.lastActor()
 		self.textactor=self.textActor()
@@ -128,7 +129,10 @@ class Renderer:
 		return textactor
 
 	def lastActor(self):
-		self.filename=self.lastVTU()
+		if(self.timestep<0):
+			self.filename=self.lastVTU()
+		else:
+			self.filename=os.path.join("./",self.run.Dir.fullpath(),'timestep_{:06d}.vtu'.format(self.timestep))
 		reader=vtkXMLUnstructuredGridReader()
 		reader.SetFileName(self.filename)
 		reader.Update() # Needed because of GetScalarRange

@@ -98,8 +98,10 @@ def plothbar(run, **kwargs):
 	#if return False or no return statement, the analysis will continue with next running instance in the list. if return True, the analysis will stop after this run.
 	return False
 
-def plotrunningavg(run, **kwargs):
+def plotrunningavginteractive(run, **kwargs):
 	import matplotlib.pyplot as plt
+	from trisurf import VTKRendering as vtk
+	import math
 	table=trisurf.Statistics(run.Dir.fullpath(),filename='data_tspoststat.csv').getTable()
 	def running_avg(col):
 		import numpy as np
@@ -107,15 +109,20 @@ def plotrunningavg(run, **kwargs):
 		for i in range(0,len(col)):
 			avg.append(np.average(col[:-i]))
 		return avg
+	fig=plt.figure(1)
 	ra=running_avg(table['hbar'])
 	plt.plot(ra)
 	plt.title('Running average')
 	plt.ylabel('1/n sum_i=niter^n(hbar_i)')
 	plt.xlabel('n')
+	def onclick(event):
+		print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f' % (event.button, event.x, event.y, event.xdata, event.ydata))
+		vtk.Renderer(kwargs.get('args', None),kwargs.get('host',None),run, math.floor(event.xdata))
+	cid = fig.canvas.mpl_connect('button_press_event', onclick)
 	plt.show()
-
+	plt.close(1)
 #start manager with configured runs
-tsmgr.start(Runs, analyses={'analyze1':analyze, 'plotrunningavg':plotrunningavg, 'plothbar':plothbar})
+tsmgr.start(Runs, analyses={'analyze1':analyze, 'plotrunningavg':plotrunningavginteractive, 'plothbar':plothbar})
 
 #statistics.combine(Runs)
 #statistics.combine([Runs[1],Runs[2]])
