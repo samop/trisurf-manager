@@ -2,6 +2,7 @@
 from trisurf import tsmgr
 from trisurf import trisurf
 from trisurf import statistics
+from trisurf import analyses
 
 print("Running trisurf version "+ tsmgr.getTrisurfVersion())
 Runs=[]
@@ -43,92 +44,19 @@ for kapa in kapa_list:
 		run.setSubdir("run0")
 		Runs.append(run)
 
-#----------------------------
 
-#kapa_list=[20,30]
-#p=[10]
-#
-#N=5*Nshell**2+2
-#Nc_list=[int(N*pp/100)  for pp in p]
-#
-#for kapa in kapa_list:
-#	for Nc in Nc_list:
-#		run=trisurf.Runner(snapshot='is_from_N25k'+str(kapa)+'V0_Nc312_c1.0.vtu')
-#		run.setMaindir(("N", "k", "V", "_Nc", "_c","_w","_F"),  ("nshell","xk0","constvolswitch","number_of_vertices_with_c0","c0", "w","F"))
-#		run.setSubdir("run0")
-#
-#		Runs.append(run)
+#Here is how we wrap functions
+def plotvolume(run, **kwargs):
+	from trisurf import analyses
+	analyses.plotColumnFromPostProcess(run,column='Volume',**kwargs)
 
-#----------------------------
+def plotbondrate(run, **kwargs):
+	from trisurf import analyses
+	analyses.plotColumnFromPostProcess(run,column='VertexMoveSucessRate',filename='statistics.csv',**kwargs)
 
 
-
-#Nov format:
-#hosts=({'name':'Hestia','address':'127.0.0.1', 'runs':Runs,  'username':'samo'},)
-
-def analyze(run, **kwargs):
-	host=kwargs.get('host', None)
-	print("Demo analysis")
-	print("Analysis on host "+host['name']+" for run "+run.Dir.fullpath()+" completed")
-	print("here comes info on the run variable:")
-	print(run)
-	print("here comes info on the host variable:")
-	print(host)
-	print("here comes info on the args variable:")
-	print(kwargs.get('args',None))
-
-def plothbar(run, **kwargs):
-	import matplotlib.pyplot as plt
-
-	def smooth(y, box_pts):
-		import numpy as np
-		box = np.ones(box_pts)/box_pts
-		y_smooth = np.convolve(y, box, mode='same')
-		return y_smooth
-	table=trisurf.Statistics(run.Dir.fullpath(),filename='data_tspoststat.csv').getTable()
-	plt.plot(table['hbar'], '.')
-	plt.title(run.Dir.fullpath())
-	plt.xlabel('Iteration')
-	plt.ylabel('hbar')
-	smooth_window=10
-	smoothed=smooth(table['hbar'],smooth_window)
-	plt.plot(tuple(range(int(smooth_window/2),len(smoothed)-int(smooth_window/2))),smoothed[int(smooth_window/2):-int(smooth_window/2)])
-	plt.show()
-	print
-	#if return False or no return statement, the analysis will continue with next running instance in the list. if return True, the analysis will stop after this run.
-	return False
-
-def plotrunningavginteractive(run, **kwargs):
-	import matplotlib.pyplot as plt
-	from trisurf import VTKRendering as vtk
-	import math
-	from multiprocessing import Process
-	table=trisurf.Statistics(run.Dir.fullpath(),filename='data_tspoststat.csv').getTable()
-	def running_avg(col):
-		import numpy as np
-		avg=[]	
-		for i in range(0,len(col)):
-			avg.append(np.average(col[:-i]))
-		return avg
-	def spawned_viewer(n):
-		vtk.Renderer(kwargs.get('args', None),kwargs.get('host',None),run, n)
-
-	fig=plt.figure(1)
-	ra=running_avg(table['hbar'])
-	l=len(table['hbar'])
-	plt.plot(ra)
-	plt.title('Running average')
-	plt.ylabel('1/n sum_i=niter^n(hbar_i)')
-	plt.xlabel('n')
-	def onclick(event):
-		#print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f' % (event.button, event.x, event.y, event.xdata, event.ydata))
-		p=Process(target=spawned_viewer, args=(l-math.floor(event.xdata)-1,))
-		p.start()
-	cid = fig.canvas.mpl_connect('button_press_event', onclick)
-	plt.show()
-	plt.close(1)
 #start manager with configured runs
-tsmgr.start(Runs, analyses={'analyze1':analyze, 'plotrunningavg':plotrunningavginteractive, 'plothbar':plothbar})
+tsmgr.start(Runs, analyses={'demo':analyses.demo,'runningavg':analyses.plotrunningavginteractive, 'plothbar':analyses.plotColumnFromPostProcess, 'plotvol':plotvolume, 'plotbondrate':plotbondrate})
 
-#statistics.combine(Runs)
+#here is how we combine statistics of multiple runs
 #statistics.combine([Runs[1],Runs[2]])
