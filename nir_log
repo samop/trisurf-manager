@@ -102,6 +102,7 @@ def plotrunningavginteractive(run, **kwargs):
 	import matplotlib.pyplot as plt
 	from trisurf import VTKRendering as vtk
 	import math
+	from multiprocessing import Process
 	table=trisurf.Statistics(run.Dir.fullpath(),filename='data_tspoststat.csv').getTable()
 	def running_avg(col):
 		import numpy as np
@@ -109,6 +110,9 @@ def plotrunningavginteractive(run, **kwargs):
 		for i in range(0,len(col)):
 			avg.append(np.average(col[:-i]))
 		return avg
+	def spawned_viewer(n):
+		vtk.Renderer(kwargs.get('args', None),kwargs.get('host',None),run, n)
+
 	fig=plt.figure(1)
 	ra=running_avg(table['hbar'])
 	plt.plot(ra)
@@ -117,7 +121,8 @@ def plotrunningavginteractive(run, **kwargs):
 	plt.xlabel('n')
 	def onclick(event):
 		print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f' % (event.button, event.x, event.y, event.xdata, event.ydata))
-		vtk.Renderer(kwargs.get('args', None),kwargs.get('host',None),run, math.floor(event.xdata))
+		p=Process(target=spawned_viewer, args=(math.floor(event.xdata)-1,))
+		p.start()
 	cid = fig.canvas.mpl_connect('button_press_event', onclick)
 	plt.show()
 	plt.close(1)
