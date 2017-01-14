@@ -115,13 +115,14 @@ def plotrunningavginteractive(run, **kwargs):
 
 	fig=plt.figure(1)
 	ra=running_avg(table['hbar'])
+	l=len(table['hbar'])
 	plt.plot(ra)
 	plt.title('Running average')
 	plt.ylabel('1/n sum_i=niter^n(hbar_i)')
 	plt.xlabel('n')
 	def onclick(event):
-		print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f' % (event.button, event.x, event.y, event.xdata, event.ydata))
-		p=Process(target=spawned_viewer, args=(math.floor(event.xdata)-1,))
+		#print('button=%d, x=%d, y=%d, xdata=%f, ydata=%f' % (event.button, event.x, event.y, event.xdata, event.ydata))
+		p=Process(target=spawned_viewer, args=(l-math.floor(event.xdata)-1,))
 		p.start()
 	cid = fig.canvas.mpl_connect('button_press_event', onclick)
 	plt.show()
