@@ -516,12 +516,20 @@ class Runner:
 		self.Comment.writefile(data,mode=mode)
 
 
-	def getLastVTU(self):
+	def getLastVTUold(self):
 		vtuidx=self.getLastIteration()-int(self.Tape.getValue("inititer"))
 		if vtuidx<0:
 			return None
 		else:
 			return  'timestep_{:06d}.vtu'.format(vtuidx)
+
+	def getLastVTU(self):
+		flist=[]
+		for file in os.listdir(self.Dir.fullpath()):
+			if file.endswith(".vtu"):
+				flist.append(file)
+		flist.sort()		
+		return(flist[-1])
 
 	def __str__(self):
 		if(self.getStatus()==0):

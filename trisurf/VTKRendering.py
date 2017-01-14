@@ -80,9 +80,10 @@ class MultiRender:
 
 
 class Renderer:
-	def __init__(self,args,host):
+	def __init__(self,args,host,run):
 		self.host=host
 		self.args=args
+		self.run=run
 		self.renderer = vtkRenderer()
 		self.actor=self.lastActor()
 		self.textactor=self.textActor()
@@ -94,24 +95,27 @@ class Renderer:
 		self.renderer_window.AddRenderer(self.renderer)
 		self.renderer_window.SetSize(1200,600)
 	
-		self.renderer.SetViewport(0.0,0.0,0.5,1.0)
-		rend=vtk.vtkRenderer()
-		rend.AddActor(self.actor)
-		rend.SetViewport(0.5,0.0,1.0,1.0)
-		self.renderer_window.AddRenderer(rend)	
+#		self.renderer.SetViewport(0.0,0.0,0.5,1.0)
+#		rend=vtk.vtkRenderer()
+#		rend.AddActor(self.actor)
+#		rend.SetViewport(0.5,0.0,1.0,1.0)
+#		self.renderer_window.AddRenderer(rend)	
 # Set up a check for aborting rendering.
 		# Create the RendererWindowInteractor and display the vtk_file
 		interactor = vtkRenderWindowInteractor()
 		interactor.SetRenderWindow(self.renderer_window)
 		interactor.Initialize()
 		interactor.AddObserver("TimerEvent", self.RenderUpdate)
-		timerIDR = interactor.CreateRepeatingTimer(1000)
+		timerIDR = interactor.CreateRepeatingTimer(10000)
 		interactor.Start()
 		return
 
 	def lastVTU(self):
-		Dir=trisurf.Directory(maindir=self.host['runs'][0].maindir,simdir=self.host['runs'][0].subdir)
-		filename=os.path.join("./",Dir.fullpath(),self.host['runs'][0].getLastVTU())
+		#Dir=trisurf.Directory(maindir=self.host['runs'][self.run].maindir,simdir=self.host['runs'][self.run].subdir)
+		Dir=self.run.Dir
+		#print(self.run.getLastVTU())
+		filename=os.path.join("./",Dir.fullpath(),self.run.getLastVTU())
+		#filename=os.path.join("./",Dir.fullpath(),self.host['runs'][self.run].getLastVTU())
 		return filename
 
 	def textActor(self):

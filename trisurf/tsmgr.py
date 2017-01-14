@@ -256,13 +256,16 @@ def perform_action(args,host,**kwargs):
 
 
 def preview_vtu(args,host):
-	#only for localhost at the moment
-	#if sys.version_info>=(3,0):
-	#	print("Preview works only with python 2.7")
-	#	exit(1)
 	from . import VTKRendering
+	target_runs=getTargetRunIdxList(args)
+	if target_runs==None:
+		target_runs=list(range(1,len(host['runs'])+1))
 	if host['name'] == socket.gethostname():
-		VTKRendering.Renderer(args,host)
+		for i in target_runs:
+			VTKRendering.Renderer(args,host,host['runs'][i-1])
+	else:
+		print("VTK rendering currently works on localhost only!")
+		
 
 def getListOfHostConfigurationByHostname(hosts,host):
 	rhost=[]
