@@ -13,7 +13,8 @@ def demo(run, **kwargs):
 	print(kwargs.get('args',None))
 
 
-def plotrunningavginteractive(run, **kwargs):
+# can be wrapped to specify scalar_field)
+def plotrunningavginteractive(run, scalar_field='vertices_idx', **kwargs):
 	import matplotlib.pyplot as plt
 	from trisurf import VTKRendering as vtk
 	import math
@@ -26,7 +27,7 @@ def plotrunningavginteractive(run, **kwargs):
 			avg.append(np.average(col[:-i]))
 		return avg
 	def spawned_viewer(n):
-		vtk.Renderer(kwargs.get('args', None),kwargs.get('host',None),run, n)
+		vtk.Renderer(kwargs.get('args', None),kwargs.get('host',None),run, timestep=n,scalar_field=scalar_field)
 
 	fig=plt.figure(1)
 	ra=running_avg(table['hbar'])

@@ -2,7 +2,7 @@
 from trisurf import trisurf
 from trisurf import tsmgr
 
-
+from trisurf import analyses
 
 
 #Ok... Configure your keys:
@@ -42,6 +42,6 @@ def testWebAnalysis(run, **kwargs):
 
 hosts=({'name':'natalie','address':'kabinet.penic.eu', 'runs':Runs, 'username':'samo', 'remotebasepath':'simulations-test/subdir/subdir'},
 	{'name':'Hestia','address':'127.0.0.1', 'runs':Runs, 'username':'samo'})
-analyses={'analysis1':analyze,'webReport':testWebAnalysis}
+analyses={'analysis1':analyze,'webReport':testWebAnalysis,'runningavg':analyses.plotrunningavginteractive}
 
 tsmgr.start(hosts, analyses=analyses)

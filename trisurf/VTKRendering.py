@@ -80,11 +80,12 @@ class MultiRender:
 
 
 class Renderer:
-	def __init__(self,args,host,run, timestep=-1):
+	def __init__(self,args,host,run, timestep=-1, scalar_field='vertices_idx'):
 		self.host=host
 		self.args=args
 		self.run=run
 		self.timestep=timestep
+		self.scalar_field=scalar_field
 		self.renderer = vtkRenderer()
 		self.actor=self.lastActor()
 		self.textactor=self.textActor()
@@ -137,10 +138,19 @@ class Renderer:
 		reader.SetFileName(self.filename)
 		reader.Update() # Needed because of GetScalarRange
 		output = reader.GetOutput()
+		output.GetPointData().SetActiveScalars(self.scalar_field)
 		scalar_range = output.GetScalarRange()
 		mapper = vtkDataSetMapper()
 		mapper.SetInputData(output)
 		mapper.SetScalarRange(scalar_range)
+		
+		#color lookuptables
+		#lut = vtk.vtkLookupTable()
+		#lut.SetHueRange(0.5, 0.6)
+		#lut.SetSaturationRange(0, 1)
+		#lut.SetValueRange(0, 1)
+
+		#mapper.SetLookupTable(lut)
 
 		# Create the Actor
 		actor = vtkActor()

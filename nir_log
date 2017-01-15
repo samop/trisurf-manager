@@ -54,9 +54,12 @@ def plotbondrate(run, **kwargs):
 	from trisurf import analyses
 	analyses.plotColumnFromPostProcess(run,column='VertexMoveSucessRate',filename='statistics.csv',**kwargs)
 
+def runningavgc0(run, **kwargs):
+	from trisurf import analyses
+	analyses.plotrunningavginteractive(run, scalar_field='spontaneous_curvature', **kwargs)
 
 #start manager with configured runs
-tsmgr.start(Runs, analyses={'demo':analyses.demo,'runningavg':analyses.plotrunningavginteractive, 'plothbar':analyses.plotColumnFromPostProcess, 'plotvol':plotvolume, 'plotbondrate':plotbondrate})
+tsmgr.start(Runs, analyses={'demo':analyses.demo,'runningavg':analyses.plotrunningavginteractive, 'plothbar':analyses.plotColumnFromPostProcess, 'plotvol':plotvolume, 'plotbondrate':plotbondrate, 'runningavgC0':runningavgc0})
 
 #here is how we combine statistics of multiple runs
 #statistics.combine([Runs[1],Runs[2]])
