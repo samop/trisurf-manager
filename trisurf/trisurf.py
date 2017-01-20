@@ -528,11 +528,8 @@ class Runner:
 		for file in os.listdir(self.Dir.fullpath()):
 			if file.endswith(".vtu"):
 				flist.append(file)
-		flist.sort()
-		if(len(flist)==0):
-			return -1		
-		else:
-			return(flist[-1])
+		flist.sort()		
+		return(flist[-1])
 
 	def __str__(self):
 		if(self.getStatus()==0):

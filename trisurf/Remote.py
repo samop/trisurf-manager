@@ -20,20 +20,23 @@ class Connection:
 	
 	def connect(self, Timeout=5):
 		if(not self.connected):
-#			try:
-			print("Trying to connect to: "+self.username+"@"+self.hostname+":"+str(self.port)+".")
-			self.ssh.connect(self.hostname, username=self.username, password=self.password, port=self.port, timeout=Timeout)
-			self.connected=True
-#			except:
-#				print("Error establishing connection with "+self.username+"@"+self.hostname+":"+str(self.port)+".")
-#				exit(1)
+			try:
+				print("Trying to connect to: "+self.username+"@"+self.hostname+":"+str(self.port)+".")
+				self.ssh.connect(self.hostname, username=self.username, password=self.password, port=self.port, timeout=Timeout)
+				self.connected=True
+			except:
+				print("Error establishing connection with "+self.username+"@"+self.hostname+":"+str(self.port)+".")
+				exit(1)
 		else:
 			print("Already connected!")
 		return
 
 	def disconnect(self):
 		if(self.connected):
-			self.ssh.close()
+			try:
+				self.ssh.close()
+			except:
+				print("Cannot disconect. Unknown error.")
 		else:
 			print("Cannot disconect. Already disconnected.")
 		self.connected=False
@@ -52,16 +55,14 @@ class Connection:
 			print("Cannot execute remote commands. Connect first.")
 
 	def send_file(self, local, remote):
-		pass
-#		sftp=self.ssh.open_sftp()
-#		sftp.put(local,remote)
-#		sftp.close()
+		sftp=self.ssh.open_sftp()
+		sftp.put(local,remote)
+		sftp.close()
 
 	def receive_file(self,remote,local):
-		pass
-#		sftp=self.ssh.open_sftp()
-#		sftp.get(remote,local)
-#		sftp.close()
+		sftp=self.ssh.open_sftp()
+		sftp.get(remote,local)
+		sftp.close()
 
 	def mkdir_remote(self,directory):
 		sftp=self.ssh.open_sftp()
@@ -88,4 +89,13 @@ class Connection:
 		return True
 	
 	def send_multiple_files_in_directory(self,local_files,directory):
-		pass
+		sftp=self.ssh.open_sftp()
+#		try:
+#			sftp.chdir(directory)  # Test if remote_path exists
+#		except (IOError,FileNotFoundError):
+#			sftp.mkdir(directory)  # Create remote_path
+#			sftp.chdir(directory)
+		self.mkdir_p(sftp, directory)
+		for f in set(local_files):	
+			sftp.put(f, f)
+		sftp.close()	

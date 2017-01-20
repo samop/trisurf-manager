@@ -18,7 +18,7 @@ else:
 	
 #import io
 
-#from IPython import embed
+from IPython import embed
 
 import __main__ as main
 
@@ -94,12 +94,8 @@ def copyConfigAndConnect(hosts):
 				port=host['port']
 			except:
 				port=22 #default ssh port
-			try:
-				rm=Remote.Connection(hostname=host['address'],username=username, port=port)
-				rm.connect()
-			except:
-				host['_conn']=None
-				continue
+			rm=Remote.Connection(hostname=host['address'],username=username, port=port)
+			rm.connect()
 #			print ("Sendind file:"+main.__file__)
 			if('remotebasepath' in host):
 				remote_dir=host['remotebasepath']
@@ -135,7 +131,6 @@ def getTargetRunIdxList(args):
 
 
 def status_processes(args,host):
-	print("in status processes")
 	target_runs=getTargetRunIdxList(args)
 	if target_runs==None:
 		target_runs=list(range(1,len(host['runs'])+1))
@@ -319,19 +314,16 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 			#print(remote_dir)
 			#print(main.__file__)
 			#print('python3 '+main.__file__+' -x '+" ".join(argv))
-			if(host['_conn']!=None):
-#				print("was here, "+'cd '+remote_dir+ '; python3 '+main.__file__+' -x --originating-host ' +socket.gethostname()+" "+" ".join(argv))
-				output=host['_conn'].execute('cd '+remote_dir+ '; python3 '+main.__file__+' -x --originating-host ' +socket.gethostname()+" "+" ".join(argv))
-				for line in output:
-					print(line.replace('\n',''))
+			output=host['_conn'].execute('cd '+remote_dir+ '; python3 '+main.__file__+' -x --originating-host ' +socket.gethostname()+" "+" ".join(argv))
+			for line in output:
+				print(line.replace('\n',''))
 
 
 	if not args['local_only']:
 		print("Closing connections to remote hosts")
 		for host in hosts:
 			if(host['name'] !=socket.gethostname()):
-				if(host['_conn']):
-					host['_conn'].disconnect()
+				host['_conn'].disconnect()
 
 
 
