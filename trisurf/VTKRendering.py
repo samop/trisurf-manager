@@ -91,11 +91,11 @@ class Renderer:
 		self.textactor=self.textActor()
 		self.renderer.AddActor(self.actor)
 		self.renderer.AddActor(self.textactor)
-		self.renderer.SetBackground(0, 0, 0) # Set background to white
+		self.renderer.SetBackground(81/255, 87/255, 110/255) # Set background to nicely grey
 		# Create the RendererWindow
 		self.renderer_window = vtkRenderWindow()
 		self.renderer_window.AddRenderer(self.renderer)
-		self.renderer_window.SetSize(1200,600)
+		self.renderer_window.SetSize(800,800)
 	
 #		self.renderer.SetViewport(0.0,0.0,0.5,1.0)
 #		rend=vtk.vtkRenderer()
@@ -149,9 +149,20 @@ class Renderer:
 		#lut.SetHueRange(0.5, 0.6)
 		#lut.SetSaturationRange(0, 1)
 		#lut.SetValueRange(0, 1)
-
 		#mapper.SetLookupTable(lut)
 
+		#advanced lookuptables...
+		lut = vtk.vtkLookupTable()
+		lutNum = 256
+		lut.SetNumberOfTableValues(lutNum)
+		ctf = vtk.vtkColorTransferFunction()
+		ctf.SetColorSpaceToDiverging()
+		ctf.AddRGBPoint(0.0, 0.230, 0.299, 0.754)
+		ctf.AddRGBPoint(1.0, 0.706, 0.016, 0.150)
+		for ii,ss in enumerate([float(xx)/float(lutNum) for xx in range(lutNum)]):
+			cc = ctf.GetColor(ss)
+			lut.SetTableValue(ii,cc[0],cc[1],cc[2],1.0)
+		mapper.SetLookupTable(lut)
 		# Create the Actor
 		actor = vtkActor()
 		actor.SetMapper(mapper)
