@@ -56,6 +56,7 @@ def ParseCLIArguments(arguments):
 	parser.add_argument('-R','--raw',help='print status and the rest of the information in raw format', action="store_true")
 	parser.add_argument('-x','--local-only',help='do not attempt to contact remote hosts. Run all operations only on local machine',action='store_true')
 	parser.add_argument('--originating-host',nargs=1,help='specify which host started the remote connections. Useful mainly fo internal functionaly of tsmgr and analyses.')
+	parser.add_argument('--analysis-options', nargs='+', help='options passed down to analyses')
 	args = parser.parse_args(arguments)
 	return args
 
@@ -202,9 +203,9 @@ def start_web_server(args,host):
 	exit(0)
 
 
-def analyze(args,host,a_dict, analysis,hosts):
-	if len(a_dict)==0:
-		print ('Error: no analyses are specified in the tsmgr.start()!')
+def analyze(args,host,analysis,hosts):
+	if len(trisurf._analysis_list)==0:
+		print ('Error: no decorated function with @analysis decorator!')
 		exit(1)
 	target_runs=getTargetRunIdxList(args)
 	if target_runs==None:
@@ -212,11 +213,11 @@ def analyze(args,host,a_dict, analysis,hosts):
 	for i in target_runs:
 
 		for anal in analysis:
-			if(anal not in a_dict):
-				print("Analysis '"+anal+"' is not known. Available analyses: "+", ".join(a_dict.keys())+".")
+			if(anal not in trisurf._analysis_list):
+				print("Analysis '"+anal+"' is not known. Available analyses: "+", ".join(trisurf._analysis_list.keys())+".")
 				exit(0)
 		for anal in analysis:
-			retval=a_dict[anal](host['runs'][i-1],host=host, args=args, hosts=hosts)
+			retval=trisurf._analysis_list[anal](host['runs'][i-1],host=host, args=args, hosts=hosts)
 			#try:
 			if(retval):
 				exit(0)
@@ -247,7 +248,7 @@ def perform_action(args,host,**kwargs):
 		embed()
 		exit(0)
 	elif args['analysis']!= None:
-		analyze(args,host,kwargs.get('analyses', {}), args['analysis'],kwargs.get('hosts',None))
+		analyze(args,host, args['analysis'],kwargs.get('hosts',None))
 		exit(0)
 	else: #version requested
 		print(getTrisurfVersion())
@@ -276,7 +277,7 @@ def getListOfHostConfigurationByHostname(hosts,host):
 
 
 
-def start(hosts,argv=sys.argv[1:], analyses={}):
+def start(hosts,argv=sys.argv[1:]):
 	args=vars(ParseCLIArguments(argv))
 	#Backward compatibility... If running just on localmode, the host specification is unnecessary. Check if only Runs are specified
 	try:
@@ -304,7 +305,7 @@ def start(hosts,argv=sys.argv[1:], analyses={}):
 				print("Host <font color='orange'>"+host['name']+"</font> reports:")
 			else:
 				print("Host "+bcolors.WARNING+host['name']+bcolors.ENDC+" reports:")
-			perform_action(args,host, analyses=analyses, hosts=hosts)
+			perform_action(args,host, hosts=hosts)
 		elif not args['local_only']:
 			if('remotebasepath' in host):
 				remote_dir=host['remotebasepath']

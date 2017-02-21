@@ -1,6 +1,17 @@
 from . import trisurf
 
 
+def analysis(analysis_name='unnamed_analysis'):
+	"""Decorator for adding the analysis functions to function lists"""
+	def analysis_decorator(analysis_function):
+		trisurf._analysis_list[analysis_name]=analysis_function
+		def wrapper(*args, **kwargs):
+			analysis_function(*args,**kwargs)
+		return wrapper
+	return analysis_decorator
+
+
+@analysis('demo')
 def demo(run, **kwargs):
 	host=kwargs.get('host', None)
 	print("Demo analysis")
@@ -14,6 +25,7 @@ def demo(run, **kwargs):
 
 
 # can be wrapped to specify scalar_field)
+@analysis('plotrunningavginteractive')
 def plotrunningavginteractive(run, scalar_field='vertices_idx', **kwargs):
 	import matplotlib.pyplot as plt
 	from trisurf import VTKRendering as vtk
@@ -48,7 +60,7 @@ def plotrunningavginteractive(run, scalar_field='vertices_idx', **kwargs):
 # -------------------------------
 # these functions should be wrapped
 # -------------------------------
-
+@analysis('plotColumnFromPostProcess')
 def plotColumnFromPostProcess(run, filename='data_tspoststat.csv', column='hbar', **kwargs):
 	import matplotlib.pyplot as plt
 

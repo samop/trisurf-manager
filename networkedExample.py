@@ -2,7 +2,7 @@
 from trisurf import trisurf
 from trisurf import tsmgr
 
-from trisurf import analyses
+from trisurf.analyses import analysis
 
 
 #Ok... Configure your keys:
@@ -22,6 +22,7 @@ run3.setSubdir("run2")
 Runs=[run2, run3]
 
 #this is how analyses are defined
+@analysis('analyze')
 def analyze(run, **kwargs):
 	host=kwargs.get('host', None)
 	print("Demo analysis")
@@ -40,8 +41,11 @@ def testWebAnalysis(run, **kwargs):
 	print("\n\nStatistics file:")
 	print(run.Statistics.readText())
 
-hosts=({'name':'natalie','address':'kabinet.penic.eu', 'runs':Runs, 'username':'samo', 'remotebasepath':'simulations-test/subdir/subdir'},
-	{'name':'Hestia','address':'127.0.0.1', 'runs':Runs, 'username':'samo'})
-analyses={'analysis1':analyze,'webReport':testWebAnalysis,'runningavg':analyses.plotrunningavginteractive}
+hosts=({'name':'altea','address':'localhost', 'runs':Runs, 'username':'samo', 'remotebasepath':'simulations-test/subdir/subdir'},)
+#hosts=({'name':'natalie','address':'kabinet.penic.eu', 'runs':Runs, 'username':'samo', 'remotebasepath':'simulations-test/subdir/subdir'},
+#	{'name':'Hestia','address':'127.0.0.1', 'runs':Runs, 'username':'samo'})
+#analyses={'analysis1':analyze,'webReport':testWebAnalysis,'runningavg':analyses.plotrunningavginteractive}
 
-tsmgr.start(hosts, analyses=analyses)
+
+print(trisurf._analysis_list)
+tsmgr.start(hosts)

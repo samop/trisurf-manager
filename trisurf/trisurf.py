@@ -20,6 +20,9 @@ TS_STOPPED=1 # the process is listed, but is in stopped state
 TS_RUNNING=2 # process is running
 TS_COMPLETED=3 #simulation is completed
 
+#namespace variable. Seems the best place to put the variable in :)
+_analysis_list={}
+
 class FileContent:
 	'''
 	Class is helpful for reading and writting the specific files.
