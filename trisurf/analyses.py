@@ -1,17 +1,22 @@
 from . import trisurf
 
 
-def analysis(analysis_name='unnamed_analysis'):
+def analysis(*args):
 	"""Decorator for adding the analysis functions to function lists"""
 	def analysis_decorator(analysis_function):
 		trisurf._analysis_list[analysis_name]=analysis_function
 		def wrapper(*args, **kwargs):
 			analysis_function(*args,**kwargs)
 		return wrapper
-	return analysis_decorator
+	if len(args) == 1 and callable(args[0]): #no arguments
+		analysis_name=args[0].__name__
+		return analysis_decorator(args[0])
+	else:
+		analysis_name=args[0]
+		return analysis_decorator
 
 
-@analysis('demo')
+@analysis
 def demo(run, **kwargs):
 	host=kwargs.get('host', None)
 	print("Demo analysis")
