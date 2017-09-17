@@ -36,7 +36,7 @@ def plotrunningavginteractive(run, scalar_field='vertices_idx', **kwargs):
 	from trisurf import VTKRendering as vtk
 	import math
 	from multiprocessing import Process
-	table=trisurf.Statistics(run.Dir.fullpath(),filename='data_tspoststat.csv').getTable()
+	table=trisurf.Statistics(run.Dir.fullpath(),filename='poststat.csv').getTable()
 	def running_avg(col):
 		import numpy as np
 		avg=[]	
@@ -66,7 +66,7 @@ def plotrunningavginteractive(run, scalar_field='vertices_idx', **kwargs):
 # these functions should be wrapped
 # -------------------------------
 @analysis('plotColumnFromPostProcess')
-def plotColumnFromPostProcess(run, filename='data_tspoststat.csv', column='hbar', **kwargs):
+def plotColumnFromPostProcess(run, filename='poststat.csv', column='hbar', **kwargs):
 	import matplotlib.pyplot as plt
 
 	def smooth(y, box_pts):

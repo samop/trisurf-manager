@@ -4,7 +4,7 @@ try:
 	from vtk import *
 except:
 	print("Vtk rendering works if you manually install vtk7 for python3")
-	exit(1)
+#	exit(1)
 
 class MultiRender:
 	def __init__(self,args,host):
