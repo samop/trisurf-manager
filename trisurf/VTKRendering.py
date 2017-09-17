@@ -182,3 +182,16 @@ class Renderer:
 		#self.render.RemoveActor(self.actor)
 		
 		return
+
+
+class RenderVTUFile(Renderer):
+	def __init__(self,args,filename=None,scalar_field='vertices_idx'):
+		self.filename=filename
+		Renderer.__init__(self,args,host=None, run=None, timestep=-1, scalar_field=scalar_field)
+
+	def lastVTU(self):
+		if(self.filename):
+			return self.filename
+		else:
+			raise Exception('No file specified')
+

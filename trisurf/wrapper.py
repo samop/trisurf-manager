@@ -201,3 +201,7 @@ ts_cluster._fields_=[('nvtx',c_uint),('idx',c_uint),('vtx', POINTER(POINTER(ts_v
 class ts_cluster_list(Structure):
 	_fields_=[('n',c_uint),('poly',POINTER(POINTER(ts_cluster)))]
 
+
+
+
+ts=CDLL('libtrisurf.so')
