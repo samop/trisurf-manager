@@ -205,3 +205,47 @@ class ts_cluster_list(Structure):
 
 
 ts=CDLL('libtrisurf.so')
+
+
+
+#function call wrappers
+def create_vesicle_from_tape(tape):
+	"""Using pointer for tape, it creates a vesicle, returning pointer to it."""
+	ts.create_vesicle_from_tape.argtype=POINTER(ts_tape)
+	ts.create_vesicle_from_tape.restype=POINTER(ts_vesicle)
+	return ts.create_vesicle_from_tape(tape)
+
+def parsetape(filename='tape'):
+	"""Loads tape with  filename (if not given it defaults to 'tape'). It returns a pointer to structure for tape"""
+	ts.parsetape.restype=POINTER(ts_tape)
+	ts.parsetape.argtype=[c_char_p]
+	return ts.parsetape(filename.encode('ascii'))
+
+def parseDump(filename):
+	"""Loads a vtu file with 'filename' and creates a vesicle returning pointer to it"""
+	ts.parseDump.argtype=[c_char_p]
+	ts.parseDump.restype=POINTER(ts_vesicle)
+	vesicle=ts.parseDump(filename.encode('ascii'))
+	return vesicle
+
+def single_timestep(vesicle):
+	"""Makes a single timestep in simulations. Returns a tuple of vmsrt and bfrt (vertex move success rate and bond flip success rate)"""
+	ts.single_timestep.argtype=[POINTER(ts_vesicle),POINTER(c_double),POINTER(c_double)]
+	vmsrt=c_double(0.0)
+	bfsrt=c_double(0.0)
+	ts.single_timestep(vesicle,byref(vmsrt),byref(bfsrt))
+	return (vmsrt.value, bfsrt.value)
+
+def write_vertex_xml_file(vesicle,timestep_no=0):
+	"""Writes a vesicle into file with filename 'timestep_XXXXXX.vtu', where XXXXXX is a leading zeroed number given with timestep_no parameter (defaults to 0 if not given"""
+	ts.write_vertex_xml_file.argtypes=[POINTER(ts_vesicle),c_int]
+	ts.write_vertex_xml_file(vesicle,c_int(timestep_no))
+
+
+def vesicle_free(vesicle):
+	"""Free memory of the whole vesicle"""
+	ts.vesicle_free.argtype=[POINTER(ts_vesicle)]
+	ts.vesicle_free(vesicle)
+
+
+
